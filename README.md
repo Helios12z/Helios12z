@@ -5,7 +5,7 @@
 ###
 
 <p align="left">
-  A fullstack developer.
+  A fullstack developer and open source enjoyer.
 <br/>
   Contact me via my private email: nnguyenminhquang786@gmail.com. Or contact my listed social media accounts.
 </p>
