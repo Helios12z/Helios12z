@@ -80,49 +80,47 @@ export default function QuestionsPage() {
     // Haptic
     if (navigator.vibrate) navigator.vibrate(50);
 
-    // Submit answer as GitHub Issue using environment variables
-    const issueTitle = `Question ${currentQuestion.id} Answer`;
-    const issueBody = `**Question:** ${currentQuestion.text}\n\n**Answer:** ${answer.trim()}\n\n**Timestamp:** ${new Date().toLocaleString('vi-VN')}`;
+    // Simple logging of answers (works on GitHub Pages)
+    console.log('📝 New Answer Received:', {
+      question: currentQuestion.text,
+      answer: answer.trim(),
+      timestamp: new Date().toLocaleString('vi-VN'),
+      questionId: currentQuestion.id
+    });
 
-    // Get environment variables
-    const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
-    const repo = process.env.NEXT_PUBLIC_GITHUB_REPO || 'Helios12z/Helios12z';
+    // Create a data URL that can be accessed later
+    const answerData = {
+      question: currentQuestion.text,
+      answer: answer.trim(),
+      timestamp: new Date().toISOString(),
+      questionId: currentQuestion.id
+    };
 
+    // Store in localStorage for later access
+    const savedAnswers = JSON.parse(localStorage.getItem('quizAnswers') || '[]');
+    savedAnswers.push(answerData);
+    localStorage.setItem('quizAnswers', JSON.stringify(savedAnswers));
+
+    // Also try to send to GitHub without token (may work for public repos)
     try {
-      const response = await fetch(`https://api.github.com/repos/${repo}/issues`, {
+      // Note: This may not work due to GitHub's API restrictions
+      const response = await fetch(`https://api.github.com/repos/Helios12z/Helios12z/issues`, {
         method: 'POST',
         headers: {
-          'Authorization': `token ${token}`,
           'Accept': 'application/vnd.github.v3+json'
         },
         body: JSON.stringify({
-          title: issueTitle,
-          body: issueBody,
+          title: `Question ${currentQuestion.id} Answer`,
+          body: `**Question:** ${currentQuestion.text}\n\n**Answer:** ${answer.trim()}\n\n**Timestamp:** ${new Date().toLocaleString('vi-VN')}`,
           labels: ['question-answer']
         })
       });
 
       if (response.status === 201) {
         console.log('✅ Answer submitted to GitHub successfully!');
-      } else {
-        console.log('⚠️ GitHub submission failed:', await response.text());
-        // Log answer as fallback
-        console.log('📝 Answer data:', {
-          question: currentQuestion.text,
-          answer: answer.trim(),
-          timestamp: new Date().toLocaleString('vi-VN'),
-          questionId: currentQuestion.id
-        });
       }
     } catch (error) {
-      console.error('❌ Error submitting to GitHub:', error);
-      // Log answer as fallback
-      console.log('📝 Answer data:', {
-        question: currentQuestion.text,
-        answer: answer.trim(),
-        timestamp: new Date().toLocaleString('vi-VN'),
-        questionId: currentQuestion.id
-      });
+      console.log('ℹ️ GitHub submission skipped (not available on GitHub Pages)');
     }
 
     setTimeout(() => {
