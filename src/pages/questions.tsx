@@ -80,13 +80,50 @@ export default function QuestionsPage() {
     // Haptic
     if (navigator.vibrate) navigator.vibrate(50);
 
-    // Emit answer
-    emitEvent("send_answer", {
-      questionId: currentQuestion.id,
-      question: currentQuestion.text,
-      answer: answer.trim(),
-      timestamp: new Date().toISOString(),
-    });
+    // Submit answer as GitHub Issue using environment variables
+    const issueTitle = `Question ${currentQuestion.id} Answer`;
+    const issueBody = `**Question:** ${currentQuestion.text}\n\n**Answer:** ${answer.trim()}\n\n**Timestamp:** ${new Date().toLocaleString('vi-VN')}`;
+
+    // Get environment variables
+    const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+    const repo = process.env.NEXT_PUBLIC_GITHUB_REPO || 'Helios12z/Helios12z';
+
+    try {
+      const response = await fetch(`https://api.github.com/repos/${repo}/issues`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify({
+          title: issueTitle,
+          body: issueBody,
+          labels: ['question-answer']
+        })
+      });
+
+      if (response.status === 201) {
+        console.log('✅ Answer submitted to GitHub successfully!');
+      } else {
+        console.log('⚠️ GitHub submission failed:', await response.text());
+        // Log answer as fallback
+        console.log('📝 Answer data:', {
+          question: currentQuestion.text,
+          answer: answer.trim(),
+          timestamp: new Date().toLocaleString('vi-VN'),
+          questionId: currentQuestion.id
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error submitting to GitHub:', error);
+      // Log answer as fallback
+      console.log('📝 Answer data:', {
+        question: currentQuestion.text,
+        answer: answer.trim(),
+        timestamp: new Date().toLocaleString('vi-VN'),
+        questionId: currentQuestion.id
+      });
+    }
 
     setTimeout(() => {
       if (isLastQuestion) {
