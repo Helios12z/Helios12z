@@ -1,0 +1,12 @@
+{
+  "hosting": {
+    "site": "wangandtramloveletter",
+    "public": "out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "**/next-env.d.ts"
+    ]
+  }
+}
