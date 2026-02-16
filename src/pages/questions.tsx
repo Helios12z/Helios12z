@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { Send, ChevronRight } from "lucide-react";
 import { emitEvent } from "@/lib/socket";
 import { playButtonClick, playWhoosh } from "@/lib/sounds";
+import { db, collection, addDoc } from "@/lib/firebase";
 
 interface Question {
   id: number;
@@ -80,47 +81,32 @@ export default function QuestionsPage() {
     // Haptic
     if (navigator.vibrate) navigator.vibrate(50);
 
-    // Simple logging of answers (works on GitHub Pages)
-    console.log('📝 New Answer Received:', {
-      question: currentQuestion.text,
-      answer: answer.trim(),
-      timestamp: new Date().toLocaleString('vi-VN'),
-      questionId: currentQuestion.id
-    });
-
-    // Create a data URL that can be accessed later
+    // Save answer to Firebase
     const answerData = {
       question: currentQuestion.text,
       answer: answer.trim(),
       timestamp: new Date().toISOString(),
-      questionId: currentQuestion.id
+      questionId: currentQuestion.id,
+      questionNumber: currentQuestion.id
     };
 
-    // Store in localStorage for later access
-    const savedAnswers = JSON.parse(localStorage.getItem('quizAnswers') || '[]');
-    savedAnswers.push(answerData);
-    localStorage.setItem('quizAnswers', JSON.stringify(savedAnswers));
-
-    // Also try to send to GitHub without token (may work for public repos)
     try {
-      // Note: This may not work due to GitHub's API restrictions
-      const response = await fetch(`https://api.github.com/repos/Helios12z/Helios12z/issues`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/vnd.github.v3+json'
-        },
-        body: JSON.stringify({
-          title: `Question ${currentQuestion.id} Answer`,
-          body: `**Question:** ${currentQuestion.text}\n\n**Answer:** ${answer.trim()}\n\n**Timestamp:** ${new Date().toLocaleString('vi-VN')}`,
-          labels: ['question-answer']
-        })
-      });
+      // Add document to Firebase collection
+      await addDoc(collection(db, "answers"), answerData);
+      console.log('✅ Answer submitted to Firebase successfully!');
 
-      if (response.status === 201) {
-        console.log('✅ Answer submitted to GitHub successfully!');
-      }
+      // Also store in localStorage as backup
+      const savedAnswers = JSON.parse(localStorage.getItem('quizAnswers') || '[]');
+      savedAnswers.push(answerData);
+      localStorage.setItem('quizAnswers', JSON.stringify(savedAnswers));
+
     } catch (error) {
-      console.log('ℹ️ GitHub submission skipped (not available on GitHub Pages)');
+      console.error('❌ Error saving to Firebase:', error);
+      // Fallback to localStorage only
+      const savedAnswers = JSON.parse(localStorage.getItem('quizAnswers') || '[]');
+      savedAnswers.push(answerData);
+      localStorage.setItem('quizAnswers', JSON.stringify(savedAnswers));
+      console.log('📝 Answer saved to localStorage as backup');
     }
 
     setTimeout(() => {
