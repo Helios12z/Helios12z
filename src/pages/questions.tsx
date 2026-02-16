@@ -71,7 +71,7 @@ export default function QuestionsPage() {
   const isLastQuestion = currentIndex === questions.length - 1;
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!answer.trim() || isSending) return;
 
     setIsSending(true);
