@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
 import { Heart, Lock } from "lucide-react";
 import confetti from "canvas-confetti";
-import { emitEvent } from "@/lib/socket";
 import { playLoginSuccess, playButtonClick, playError } from "@/lib/sounds";
 
 // Bokeh particle component (pre-computed values to avoid hydration mismatch)
@@ -85,7 +84,7 @@ export default function LoginPage() {
     if (password === CORRECT_PASSWORD) {
       setIsUnlocking(true);
       playLoginSuccess();
-      emitEvent("user_login", { timestamp: new Date().toISOString() });
+      console.log('🎉 User logged in at:', new Date().toISOString());
 
       // Haptic feedback
       if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
@@ -129,7 +128,7 @@ export default function LoginPage() {
         if (digits === CORRECT_PASSWORD) {
           setIsUnlocking(true);
           playLoginSuccess();
-          emitEvent("user_login", { timestamp: new Date().toISOString() });
+          console.log('🎉 User logged in at:', new Date().toISOString());
           if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
           confetti({
             particleCount: 100,

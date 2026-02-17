@@ -1,5 +1,5 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { initializeApp, FirebaseApp } from "firebase/app";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, Firestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -12,10 +12,22 @@ const firebaseConfig = {
   measurementId: "G-3PVTVVML61"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase with timeout
+let app: FirebaseApp | null = null;
+let db: Firestore | null = null;
 
-// Initialize Cloud Firestore and get a reference to the service
-const db = getFirestore(app);
+try {
+  const initTimeout = setTimeout(() => {
+    console.warn('Firebase initialization timeout');
+  }, 3000);
+
+  app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+
+  clearTimeout(initTimeout);
+  console.log('✅ Firebase initialized successfully');
+} catch (error) {
+  console.warn('❌ Firebase initialization failed:', error);
+}
 
 export { db, collection, addDoc, getDocs, query, orderBy, limit };

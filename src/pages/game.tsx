@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import { emitEvent } from "@/lib/socket";
 import { playBagShake, playBagOpen, playCelebration } from "@/lib/sounds";
 import { Gift } from "lucide-react";
 
@@ -64,8 +63,8 @@ export default function GamePage() {
       if (selectedBag !== null) return; // Already selected one
       setSelectedBag(bag.id);
 
-      // Emit selection
-      emitEvent("user_open_bag", {
+      // Log bag selection
+      console.log('🧧 Bag opened:', {
         bagId: bag.id,
         amount: bag.amount,
         message: bag.message,

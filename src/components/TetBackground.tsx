@@ -244,10 +244,18 @@ export default function TetBackground() {
 
   return (
     <div className="absolute inset-0 pointer-events-none">
-      {/* Background image */}
+      {/* Background image with fallback */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url('/background/background TET.png')` }}
+        style={{
+          backgroundImage: `url('/background/background TET.png')`,
+          // Fallback gradient background if image is missing
+          background: `
+            radial-gradient(ellipse at 50% 20%, rgba(139,0,0,0.2) 0%, transparent 60%),
+            linear-gradient(to bottom, rgba(10,4,8,0.4) 0%, rgba(139,0,0,0.6) 100%),
+            #8B0000
+          `
+        }}
       />
 
       {/* Dark overlay for text readability */}

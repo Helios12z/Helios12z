@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
-import { Send, ChevronRight } from "lucide-react";
-import { emitEvent } from "@/lib/socket";
+import { Send, ChevronRight, X } from "lucide-react";
 import { playButtonClick, playWhoosh } from "@/lib/sounds";
 import { db, collection, addDoc } from "@/lib/firebase";
 
@@ -92,7 +91,7 @@ export default function QuestionsPage() {
 
     try {
       // Add document to Firebase collection
-      await addDoc(collection(db, "answers"), answerData);
+      await addDoc(collection(db!, "answers"), answerData);
       console.log('✅ Answer submitted to Firebase successfully!');
 
       // Also store in localStorage as backup
@@ -109,6 +108,45 @@ export default function QuestionsPage() {
       console.log('📝 Answer saved to localStorage as backup');
     }
 
+    setTimeout(() => {
+      if (isLastQuestion) {
+        router.push("/gallery");
+      } else {
+        playWhoosh();
+        setDirection(1);
+        setCurrentIndex((prev) => prev + 1);
+        setAnswer("");
+      }
+      setIsSending(false);
+    }, 600);
+  };
+
+  const handleSkip = () => {
+    if (isSending) return;
+
+    setIsSending(true);
+    playButtonClick();
+
+    // Haptic
+    if (navigator.vibrate) navigator.vibrate(50);
+
+    // Save skipped answer to localStorage only (not Firebase)
+    const skippedAnswerData = {
+      question: currentQuestion.text,
+      answer: "[ĐÃ BỎ QUA]",
+      timestamp: new Date().toISOString(),
+      questionId: currentQuestion.id,
+      questionNumber: currentQuestion.id,
+      skipped: true
+    };
+
+    const savedAnswers = JSON.parse(localStorage.getItem('quizAnswers') || '[]');
+    savedAnswers.push(skippedAnswerData);
+    localStorage.setItem('quizAnswers', JSON.stringify(savedAnswers));
+
+    console.log('⏭️ Question skipped and saved to localStorage only');
+
+    // Always proceed to next question after a short delay
     setTimeout(() => {
       if (isLastQuestion) {
         router.push("/gallery");
@@ -201,9 +239,51 @@ export default function QuestionsPage() {
         </AnimatePresence>
       </div>
 
-      {/* Submit button */}
+      {/* Action buttons */}
       <div className="relative z-10 px-6 pb-8">
         <AnimatePresence>
+          {/* Skip button - always visible */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="mb-4"
+          >
+            <motion.button
+              onClick={handleSkip}
+              disabled={isSending}
+              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              className="
+                w-full py-3 rounded-xl font-sans font-medium text-sm
+                bg-white/10 glass-card
+                text-cream/80 border border-white/10
+                flex items-center justify-center gap-2
+                disabled:opacity-50 disabled:cursor-not-allowed
+                transition-all duration-300
+                hover:bg-white/15 hover:border-white/20
+                hover:text-cream
+                backdrop-blur-sm
+              "
+            >
+              {isSending ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                  <X className="w-4 h-4" />
+                </motion.div>
+              ) : (
+                <>
+                  Bỏ qua câu này
+                  <X className="w-4 h-4" />
+                </>
+              )}
+            </motion.button>
+          </motion.div>
+
+          {/* Submit button - only shows when answer is entered */}
           {answer.trim().length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}

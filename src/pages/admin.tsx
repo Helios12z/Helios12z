@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { getSocket } from "@/lib/socket";
 
 interface LogEntry {
   id: number;
@@ -39,7 +38,7 @@ export default function AdminPage() {
       id: 0,
       time: getTimeString(),
       type: "system",
-      message: "Admin console initialized. Waiting for socket connection...",
+      message: "Admin console initialized. Using Firebase for data collection.",
     },
   ]);
   const logEndRef = useRef<HTMLDivElement>(null);
@@ -56,43 +55,6 @@ export default function AdminPage() {
       },
     ]);
   };
-
-  useEffect(() => {
-    const socket = getSocket();
-
-    socket.on("connect", () => {
-      addLog("system", `Connected to server (id: ${socket.id})`);
-    });
-
-    socket.on("disconnect", () => {
-      addLog("system", "Disconnected from server");
-    });
-
-    // Listen for user events relayed by server
-    socket.on("user_login", (data: { timestamp: string }) => {
-      addLog("login", `User logged in at ${data.timestamp}`);
-    });
-
-    socket.on("send_answer", (data: { question: string; answer: string }) => {
-      addLog("answer", `Q: "${data.question}" → A: "${data.answer}"`);
-    });
-
-    socket.on("viewing_photo", (data: { photoIndex: number; caption: string }) => {
-      addLog("photo", `Viewing photo #${data.photoIndex + 1}: "${data.caption}"`);
-    });
-
-    socket.on("user_open_bag", (data: { bagId: number; amount: string; message: string }) => {
-      addLog("bag", `Opened bag #${data.bagId} → ${data.amount} ("${data.message}")`);
-    });
-
-    return () => {
-      socket.off("user_login");
-      socket.off("send_answer");
-      socket.off("viewing_photo");
-      socket.off("user_open_bag");
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Auto-scroll
   useEffect(() => {

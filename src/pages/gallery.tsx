@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
-import { emitEvent } from "@/lib/socket";
 import { playPhotoSwipe } from "@/lib/sounds";
 
 interface Photo {
@@ -35,15 +34,6 @@ export default function GalleryPage() {
   const longPressRef = useRef(false);
 
   const currentPhoto = photos[currentIndex];
-
-  // Emit viewing event
-  useEffect(() => {
-    emitEvent("viewing_photo", {
-      photoIndex: currentIndex,
-      caption: currentPhoto.caption,
-      timestamp: new Date().toISOString(),
-    });
-  }, [currentIndex, currentPhoto.caption]);
 
   // Auto-advance timer
   const startTimer = useCallback(() => {

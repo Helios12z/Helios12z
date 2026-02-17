@@ -23,20 +23,24 @@ export default function AdminAnswersPage() {
 
   const fetchAnswers = async () => {
     try {
-      const answersQuery = query(
-        collection(db, "answers"),
-        orderBy("timestamp", "desc"),
-        limit(50)
-      );
+      if (db) {
+        const answersQuery = query(
+          collection(db, "answers"),
+          orderBy("timestamp", "desc"),
+          limit(50)
+        );
 
-      const querySnapshot = await getDocs(answersQuery);
-      const fetchedAnswers: Answer[] = [];
+        const querySnapshot = await getDocs(answersQuery);
+        const fetchedAnswers: Answer[] = [];
 
-      querySnapshot.forEach((doc) => {
-        fetchedAnswers.push({ id: doc.id, ...doc.data() } as Answer);
-      });
+        querySnapshot.forEach((doc) => {
+          fetchedAnswers.push({ id: doc.id, ...doc.data() } as Answer);
+        });
 
-      setAnswers(fetchedAnswers);
+        setAnswers(fetchedAnswers);
+      } else {
+        setError("Firebase not initialized. Answers cannot be loaded.");
+      }
     } catch (err) {
       console.error("Error fetching answers:", err);
       setError("Failed to load answers. Check your Firebase configuration.");
