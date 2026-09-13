@@ -5,6 +5,6 @@
 ###
 
 <p align="left">
-  An engineer and open source enjoyer.
+  A software engineer and open source enjoyer.
 
 ###
