@@ -5,6 +5,6 @@
 ###
 
 <p align="left">
-  A software engineer and open source enjoyer.
+  Full-stack Software Engineer. Solution Architect. IT Consultant. 
 
 ###
