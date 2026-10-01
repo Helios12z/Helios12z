@@ -5,6 +5,6 @@
 ###
 
 <p align="left">
-  Full-stack Software Engineer. Solution Architect. IT Consultant. 
+  Full-stack Software Engineer / Solution Architect. 
 
 ###
